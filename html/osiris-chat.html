@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>OSIRIS CHAT</title>
+    <!-- Markdown support -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.2/marked.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -333,6 +335,117 @@
         .chat-messages::-webkit-scrollbar-thumb {
             background: rgb(0, 221, 255);
         }
+
+        /* Markdown styles */
+        .message-content h1,
+        .message-content h2,
+        .message-content h3,
+        .message-content h4,
+        .message-content h5,
+        .message-content h6 {
+            color: rgb(0, 221, 255);
+            margin: 10px 0 5px 0;
+            font-weight: bold;
+        }
+
+        .message-content h1 { font-size: 1.5em; }
+        .message-content h2 { font-size: 1.3em; }
+        .message-content h3 { font-size: 1.1em; }
+
+        .message-content code {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+        }
+
+        .message-content pre {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .message-content pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            color: #00ff88;
+            display: block;
+        }
+
+        .message-content blockquote {
+            border-left: 3px solid rgb(0, 221, 255);
+            padding-left: 15px;
+            margin: 10px 0;
+            color: #aaa;
+            font-style: italic;
+        }
+
+        .message-content ul,
+        .message-content ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .message-content li {
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+
+        .message-content strong {
+            color: rgb(0, 221, 255);
+            font-weight: bold;
+        }
+
+        .message-content em {
+            color: #ffaa00;
+            font-style: italic;
+        }
+
+        .message-content a {
+            color: rgb(0, 221, 255);
+            text-decoration: underline;
+        }
+
+        .message-content a:hover {
+            color: #00ffff;
+        }
+
+        .message-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .message-content th,
+        .message-content td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .message-content th {
+            background: #1a1a1a;
+            color: rgb(0, 221, 255);
+            font-weight: bold;
+        }
+
+        .message-content hr {
+            border: none;
+            border-top: 1px solid #333;
+            margin: 20px 0;
+        }
+
+        .message-content p {
+            margin: 8px 0;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -366,7 +479,18 @@
         
     let conversationHistory = [];
     // Default model for the UI — change to any model listed by `ollama list` (e.g. llama3.1:latest)
-    const MODEL_NAME = 'llama3.1:latest';
+    const MODEL_NAME = 'gpt-oss:20b'; // llama3.1:latest';
+    
+    // Configure marked.js for security and better rendering
+    if (typeof marked !== 'undefined') {
+        marked.setOptions({
+            breaks: true,        // Convert \n to <br>
+            gfm: true,          // GitHub Flavored Markdown
+            sanitize: false,    // Allow HTML (safe since we control the input)
+            smartLists: true,
+            smartypants: true   // Smart quotes and dashes
+        });
+    }
     
     // You can override the search server by adding a query param `?search=http://<host>:8001`
     const searchParam = new URLSearchParams(window.location.search).get('search');
@@ -515,7 +639,13 @@
             
             const messageContent = document.createElement('div');
             messageContent.className = 'message-content';
-            messageContent.textContent = content;
+            
+            // Render markdown for AI responses, plain text for user messages
+            if (role === 'assistant' && typeof marked !== 'undefined') {
+                messageContent.innerHTML = marked.parse(content);
+            } else {
+                messageContent.textContent = content;
+            }
             
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(messageContent);
@@ -636,7 +766,12 @@
                                 const json = JSON.parse(line);
                                 if (json.message && json.message.content) {
                                     assistantMessage += json.message.content;
-                                    messageContent.textContent = assistantMessage;
+                                    // Render markdown during streaming
+                                    if (typeof marked !== 'undefined') {
+                                        messageContent.innerHTML = marked.parse(assistantMessage);
+                                    } else {
+                                        messageContent.textContent = assistantMessage;
+                                    }
                                     chatMessages.scrollTop = chatMessages.scrollHeight;
                                 }
                             } catch (e) {
