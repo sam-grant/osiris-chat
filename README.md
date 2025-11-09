@@ -56,7 +56,7 @@ python3 -m http.server 8000 --bind 0.0.0.0
 ollama serve
 ```
 
-**Production (systemd):**
+**Production (systemd, Linux only):**
 ```bash
 ./install-systemd.sh
 ```
@@ -73,7 +73,7 @@ The UI shows clear status messages:
 
 - **✓ Web search completed** (green) - Used real web data
 - **✓ Weather data retrieved** (green) - Got current weather
-- **💭 Using AI knowledge** (cyan) - No search needed
+- **Using AI knowledge** (cyan) - No search needed
 - **✗ Search failed** (red) - API error, using AI fallback
 
 ## Configuration
