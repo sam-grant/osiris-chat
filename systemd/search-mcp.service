@@ -1,0 +1,13 @@
+[Unit]
+Description=Web Search MCP Server
+After=network-online.target
+
+[Service]
+Environment=HOST=0.0.0.0
+WorkingDirectory=/home/sam/osiris-chat
+ExecStart=/home/sam/osiris-chat/venv/bin/python3 /home/sam/osiris-chat/search-proxy.py
+Restart=always
+User=sam
+
+[Install]
+WantedBy=multi-user.target

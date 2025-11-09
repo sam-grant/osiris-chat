@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLANKER CHAT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 900px;
+            height: 85vh;
+            background: #0a0a0a;
+            border: 2px solid rgb(0, 221, 255);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            padding: 15px 20px;
+            border-bottom: 2px solid rgb(0, 221, 255);
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border: 1px solid rgb(0, 221, 255);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border: 1px solid rgb(0, 221, 255);
+            line-height: 1.5;
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+
+        .message.user .message-content {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .message.user .message-avatar {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .chat-input-container {
+            padding: 12px 16px;
+            background: #0a0a0a;
+            border-top: 2px solid rgb(0, 221, 255);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 12px;
+            color: rgb(0, 221, 255);
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #333;
+            transition: .4s;
+            border-radius: 20px;
+            border: 1px solid rgb(0, 221, 255);
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 2px;
+            bottom: 2px;
+            background-color: rgb(0, 221, 255);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            background: #0a0a0a;
+            border: 1px solid rgb(0, 221, 255);
+            color: rgb(0, 221, 255);
+            font-size: 14px;
+            outline: none;
+            font-family: 'Courier New', monospace;
+            border-radius: 6px;
+        }
+
+        .chat-input::placeholder {
+            color: rgb(0, 221, 255);
+            opacity: 0.85;
+        }
+
+        .send-button, .search-button {
+            padding: 10px 14px;
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            border: 1px solid rgb(0, 221, 255);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s ease;
+        }
+
+        .send-button:hover,
+        .send-button:focus,
+        .search-button:hover,
+        .search-button:focus {
+            background: rgba(0, 221, 255, 0.1);
+        }
+
+        .search-button {
+            min-width: 44px;
+        }
+
+        #searchStatus {
+            font-size: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .chat-input-container { 
+                padding: 10px; 
+            }
+            .send-button, .search-button { 
+                padding: 12px 16px; 
+                font-size: 15px; 
+            }
+        }
+
+        .typing-indicator {
+            display: none;
+            gap: 10px;
+            padding: 10px 15px;
+            background: #0a0a0a;
+            border: 1px solid rgb(0, 221, 255);
+            max-width: fit-content;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: rgb(0, 221, 255);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 1; }
+            30% { opacity: 0.3; }
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgb(0, 221, 255);
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">CLANKER CHAT</div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-container">
+            <div class="controls-row">
+                <div class="toggle-container">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoSearchToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span>Auto-Search</span>
+                </div>
+                <div id="searchStatus" style="margin-left: auto;"></div>
+            </div>
+            <div class="input-row">
+                <input type="text" id="messageInput" placeholder="Type your message..." class="chat-input">
+                <button class="search-button" onclick="document.getElementById('messageInput').value.trim() && forceSearch()">🔍</button>
+                <button class="send-button" onclick="document.getElementById('messageInput').value.trim() && sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const MODEL_NAME = 'llama3.1:latest';
+        let conversationHistory = [];
+        
+        function updateSearchStatus(status) {
+            const statusEl = document.getElementById('searchStatus');
+            if (status) {
+                statusEl.textContent = status;
+                statusEl.style.color = 'rgb(0, 221, 255)';
+            } else {
+                statusEl.textContent = '';
+            }
+        }
+
+        function setTyping(isTyping) {
+            const existingIndicator = document.querySelector('.typing-indicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+
+            if (isTyping) {
+                const indicator = document.createElement('div');
+                indicator.className = 'message';
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                avatar.textContent = 'AI';
+                
+                const content = document.createElement('div');
+                content.className = 'typing-indicator message-content';
+                
+                const text = document.createElement('span');
+                text.textContent = 'Thinking';
+                
+                const dots = document.createElement('div');
+                dots.className = 'typing-dots';
+                dots.innerHTML = '<span></span><span></span><span></span>';
+                
+                content.appendChild(text);
+                content.appendChild(dots);
+                
+                indicator.appendChild(avatar);
+                indicator.appendChild(content);
+                
+                chatMessages.appendChild(indicator);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        function addMessage(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = role === 'user' ? 'USR' : 'AI';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = content;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function searchWeb(query, isForced = false) {
+            try {
+                updateSearchStatus('🔍 Searching...');
+                const response = await fetch(`http://${window.location.hostname}:8001/context`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt: query })
+                });
+                if (!response.ok) {
+                    throw new Error(`Search failed: ${response.status}`);
+                }
+                const data = await response.json();
+                updateSearchStatus(isForced ? '🔍 Using search results' : '🔍 Auto-searched');
+                return data.context;
+            } catch (error) {
+                console.error('Web search error:', error);
+                updateSearchStatus('❌ Search failed');
+                addMessage('system', `Search error: ${error.message}`);
+                return null;
+            }
+        }
+
+        async function performChatRequest() {
+            try {
+                const queryParam = new URLSearchParams(window.location.search).get('ollama');
+                let API_URL = '';
+                if (queryParam) {
+                    API_URL = queryParam.replace(/\/$/, '');
+                    if (!/^https?:\/\//i.test(API_URL)) API_URL = 'http://' + API_URL;
+                } else {
+                    API_URL = `${window.location.protocol}//${window.location.hostname}:11434`;
+                }
+
+                const response = await fetch(`${API_URL}/api/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: MODEL_NAME,
+                        messages: conversationHistory,
+                        stream: true
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let assistantMessage = '';
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message assistant';
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                avatar.textContent = 'AI';
+                
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+                chatMessages.appendChild(messageDiv);
+
+                setTyping(false);
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.trim()) {
+                            try {
+                                const json = JSON.parse(line);
+                                if (json.message?.content) {
+                                    assistantMessage += json.message.content;
+                                    messageContent.textContent = assistantMessage;
+                                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                                }
+                            } catch (e) {
+                                console.error('Error parsing JSON:', e);
+                            }
+                        }
+                    }
+                }
+
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: assistantMessage
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('system', `Error: ${error.message}`);
+            }
+        }
+
+        async function forceSearch() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            messageInput.disabled = true;
+            addMessage('user', message);
+            
+            setTyping(true);
+            const searchResult = await searchWeb(message, true);
+            if (searchResult) {
+                conversationHistory.push({
+                    role: 'system',
+                    content: `IMPORTANT: Use these web search results to answer the user's question. DO NOT make up information or ignore these results:\n${searchResult}`
+                });
+                conversationHistory.push({
+                    role: 'user',
+                    content: `Using ONLY the information from the web search results above, ${message}`
+                });
+            } else {
+                conversationHistory.push({ role: 'user', content: message });
+            }
+            
+            messageInput.value = '';
+            await performChatRequest();
+            messageInput.disabled = false;
+            messageInput.focus();
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            messageInput.disabled = true;
+            addMessage('user', message);
+            
+            const autoSearchEnabled = document.getElementById('autoSearchToggle').checked;
+            const shouldSearch = autoSearchEnabled && message.match(/^(what|who|where|when|why|how|is|are|can|could|which|tell me about)/i);
+            
+            if (shouldSearch) {
+                setTyping(true);
+                const searchResult = await searchWeb(message);
+                if (searchResult) {
+                    conversationHistory.push({
+                        role: 'system',
+                        content: `IMPORTANT: Use these web search results to answer the user's question. DO NOT make up information or ignore these results:\n${searchResult}`
+                    });
+                    conversationHistory.push({
+                        role: 'user',
+                        content: `Using ONLY the information from the web search results above, ${message}`
+                    });
+                } else {
+                    updateSearchStatus('💭 Using AI knowledge');
+                    conversationHistory.push({ role: 'user', content: message });
+                }
+            } else {
+                updateSearchStatus('💭 Using AI knowledge');
+                conversationHistory.push({ role: 'user', content: message });
+            }
+            
+            messageInput.value = '';
+            await performChatRequest();
+            messageInput.disabled = false;
+            messageInput.focus();
+        }
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (messageInput.value.trim()) {
+                    sendMessage();
+                }
+            }
+        });
+
+        // Initialize
+        addMessage('system', 'Clanker initialised... Model: ' + MODEL_NAME);
+    </script>
+</body>
+</html>

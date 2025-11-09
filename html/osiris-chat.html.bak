@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLANKER CHAT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 900px;
+            height: 85vh;
+            background: #0a0a0a;
+            border: 2px solid rgb(0, 221, 255);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            padding: 15px 20px;
+            border-bottom: 2px solid rgb(0, 221, 255);
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border: 1px solid rgb(0, 221, 255);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border: 1px solid rgb(0, 221, 255);
+            line-height: 1.5;
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            font-size: 14px;
+        }
+
+        .message.user .message-content {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .message.user .message-avatar {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .chat-input-container {
+            padding: 12px 16px;
+            background: #0a0a0a;
+            border-top: 2px solid rgb(0, 221, 255);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 12px;
+            color: rgb(0, 221, 255);
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #333;
+            transition: .4s;
+            border-radius: 20px;
+            border: 1px solid rgb(0, 221, 255);
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 2px;
+            bottom: 2px;
+            background-color: rgb(0, 221, 255);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        .chat-input {
+            flex: 1 1 auto;
+            min-width: 0;
+            padding: 12px 15px;
+            background: #0a0a0a;
+            border: 1px solid rgb(0, 221, 255);
+            color: rgb(0, 221, 255);
+            font-size: 14px;
+            outline: none;
+            font-family: 'Courier New', monospace;
+            border-radius: 6px;
+        }
+
+        .send-button {
+            flex: 0 0 auto;
+            padding: 10px 14px;
+            background: #0a0a0a; /* match container */
+            color: rgb(0, 221, 255);
+            border: 1px solid rgb(0, 221, 255);
+            border-radius: 6px;
+            /* font-weight: 700; */
+            cursor: pointer;
+            box-shadow: 0 0 0 rgba(0,0,0,0); /* keep flat look */
+            transition: background 120ms ease, color 120ms ease, transform 80ms ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        .send-button:hover,
+        .send-button:focus {
+            background: rgba(0,221,255,0.06);
+            outline: none;
+            box-shadow: 0 0 10px rgba(0,221,255,0.06);
+        }
+
+        .send-button:active,
+        .search-button:active {
+            transform: translateY(1px);
+            opacity: 0.95;
+        }
+
+        .search-button {
+            flex: 0 0 auto;
+            padding: 10px 14px;
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            border: 1px solid rgb(0, 221, 255);
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 0 0 rgba(0,0,0,0);
+            transition: background 120ms ease, color 120ms ease, transform 80ms ease;
+            font-family: 'Courier New', monospace;
+            margin-right: 6px;
+        }
+
+        .search-button:hover,
+        .search-button:focus {
+            background: rgba(0,221,255,0.06);
+            outline: none;
+            box-shadow: 0 0 10px rgba(0,221,255,0.06);
+        }
+
+        @media (max-width: 480px) {
+            .chat-input-container { padding: 10px; }
+            .send-button, .search-button { padding: 12px 16px; font-size: 15px; }
+        }
+
+        .chat-input::placeholder {
+            /* match the UI cyan color used elsewhere */
+            color: rgb(0, 221, 255);
+            opacity: 0.85;
+        }
+
+        .typing-indicator {
+            display: none;
+            gap: 10px;
+            padding: 10px 15px;
+            background: #0a0a0a;
+            border: 1px solid rgb(0, 221, 255);
+            max-width: fit-content;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: rgb(0, 221, 255);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 1;
+            }
+            30% {
+                opacity: 0.3;
+            }
+        }
+
+        .error-message {
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            padding: 10px;
+            border: 1px solid rgb(0, 221, 255);
+            margin: 10px 0;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgb(0, 221, 255);
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            CLANKER CHAT
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message assistant">
+                <div class="message-avatar">AI</div>
+                <div class="message-content">
+                    Clanker initialised... 
+                </div>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                class="chat-input" 
+                id="messageInput" 
+                placeholder="Enter message..."
+                autocomplete="off"
+            >
+            <button id="sendButton" class="send-button" aria-label="Send message">SEND</button>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        
+    let conversationHistory = [];
+    // Default model for the UI — change to any model listed by `ollama list` (e.g. llama3.1:latest)
+    const MODEL_NAME = 'llama3.1:latest';
+    
+    // You can override the search server by adding a query param `?search=http://<host>:8001`
+    const searchParam = new URLSearchParams(window.location.search).get('search');
+    const SEARCH_SERVER = searchParam || `http://${window.location.hostname}:8001`;
+    
+    function updateSearchStatus(status) {
+        const statusEl = document.getElementById('searchStatus');
+        if (status) {
+            statusEl.textContent = status;
+            statusEl.style.color = 'rgb(0, 221, 255)';
+        } else {
+            statusEl.textContent = '';
+        }
+    }
+
+    async function searchWeb(query, isForced = false) {
+        try {
+            updateSearchStatus('🔍 Searching...');
+            // Use MCP server running on port 8001
+            const response = await fetch(`http://${window.location.hostname}:8001/context`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: query })
+            });
+            if (!response.ok) {
+                throw new Error(`Search failed: ${response.status}`);
+            }
+            const data = await response.json();
+            updateSearchStatus(isForced ? '🔍 Using search results' : '🔍 Auto-searched');
+            return data.context;
+        } catch (error) {
+            console.error('Web search error:', error);
+            updateSearchStatus('❌ Search failed');
+            addMessage('system', `Search error: ${error.message}`);
+            return null;
+        }
+    }
+    // You can override the Ollama host by adding a query param `?ollama=http://<host>:11434`
+    // If not provided, the UI will attempt to contact the same host that served the page
+    // (useful when the page is served from the Ollama host). Examples:
+    //  - http://server:8000/clanker-chat.html?ollama=http://192.168.1.50:11434
+    //  - http://server:8000/clanker-chat.html?ollama=192.168.1.50
+        
+
+        // Initialize - update welcome message with model name
+        async function initializeChat() {
+            const welcomeMessage = document.querySelector('.message-content');
+            welcomeMessage.textContent = `Clanker initialised... Model: ${MODEL_NAME}`;
+        }
+
+        initializeChat();
+
+        function addMessage(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = role === 'user' ? 'USR' : 'AI';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = content;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function setTyping(isTyping) {
+            let typingIndicator = document.querySelector('.typing-indicator');
+            
+            if (isTyping && !typingIndicator) {
+                typingIndicator = document.createElement('div');
+                typingIndicator.className = 'typing-indicator active';
+                typingIndicator.innerHTML = `
+                    <div class="message-avatar">AI</div>
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                `;
+                chatMessages.appendChild(typingIndicator);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } else if (!isTyping && typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+    async function forceSearch() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        messageInput.disabled = true;
+        addMessage('user', message);
+        
+        setTyping(true);
+        const searchResult = await searchWeb(message, true);
+        if (searchResult) {
+            conversationHistory.push({
+                role: 'system',
+                content: `IMPORTANT: Use these web search results to answer the user's question. DO NOT make up information or ignore these results:\n${searchResult}`
+            });
+            conversationHistory.push({
+                role: 'user',
+                content: `Using ONLY the information from the web search results above, ${message}`
+            });
+        } else {
+            conversationHistory.push({ role: 'user', content: message });
+        }
+        
+        messageInput.value = '';
+        await performChatRequest();
+        messageInput.disabled = false;
+        messageInput.focus();
+    }
+
+    async function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        messageInput.disabled = true;            addMessage('user', message);
+            
+            const autoSearchEnabled = document.getElementById('autoSearchToggle').checked;
+            const shouldSearch = autoSearchEnabled && message.match(/^(what|who|where|when|why|how|is|are|can|could|which|tell me about)/i);
+            
+            if (shouldSearch) {
+                setTyping(true);
+                const searchResult = await searchWeb(message);
+                if (searchResult) {
+                    // Add search context to the conversation
+                    conversationHistory.push({
+                        role: 'system',
+                        content: `IMPORTANT: Use these web search results to answer the user's question. DO NOT make up information or ignore these results:\n${searchResult}`
+                    });
+                    conversationHistory.push({
+                        role: 'user',
+                        content: `Using ONLY the information from the web search results above, ${message}`
+                    });
+                } else {
+                    updateSearchStatus('💭 Using AI knowledge');
+                    conversationHistory.push({ role: 'user', content: message });
+                }
+            } else {
+                updateSearchStatus('💭 Using AI knowledge');
+                conversationHistory.push({ role: 'user', content: message });
+            }
+            messageInput.value = '';
+
+            setTyping(true);
+
+                try {
+                // Resolve API base (allow override via ?ollama=...)
+                const queryParam = new URLSearchParams(window.location.search).get('ollama');
+                let API_URL = '';
+                if (queryParam) {
+                    API_URL = queryParam.replace(/\/$/, '');
+                    if (!/^https?:\/\//i.test(API_URL)) API_URL = 'http://' + API_URL;
+                } else {
+                    // default to the host that served the page, on port 11434
+                    API_URL = `${window.location.protocol}//${window.location.hostname}:11434`;
+                }
+
+                const response = await fetch(`${API_URL}/api/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: MODEL_NAME,
+                        messages: conversationHistory,
+                        stream: true
+                    })
+                });
+
+                setTyping(false);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let assistantMessage = '';
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message assistant';
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                avatar.textContent = 'AI';
+                
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+                chatMessages.appendChild(messageDiv);
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.trim()) {
+                            try {
+                                const json = JSON.parse(line);
+                                if (json.message && json.message.content) {
+                                    assistantMessage += json.message.content;
+                                    messageContent.textContent = assistantMessage;
+                                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                                }
+                            } catch (e) {
+                                console.error('Error parsing JSON:', e);
+                            }
+                        }
+                    }
+                }
+
+                conversationHistory.push({ role: 'assistant', content: assistantMessage });
+
+            } catch (error) {
+                setTyping(false);
+                console.error('Error:', error);
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = `ERROR: ${error.message}. Check clanker connection.`;
+                chatMessages.appendChild(errorDiv);
+            } finally {
+                messageInput.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        // send on Enter
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // send button for mobile / accessibility
+        const sendButton = document.getElementById('sendButton');
+        if (sendButton) {
+            sendButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                sendMessage();
+            });
+        }
+
+        messageInput.focus();
+    </script>
+</body>
+</html>

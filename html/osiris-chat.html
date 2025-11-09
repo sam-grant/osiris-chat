@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>OSIRIS CHAT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 900px;
+            height: 85vh;
+            background: #0a0a0a;
+            border: 2px solid rgb(0, 221, 255);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            padding: 15px 20px;
+            border-bottom: 2px solid rgb(0, 221, 255);
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border: 1px solid rgb(0, 221, 255);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border: 1px solid rgb(0, 221, 255);
+            line-height: 1.5;
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            font-size: 14px;
+        }
+
+        .message.user .message-content {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .message.user .message-avatar {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .chat-input-container {
+            padding: 12px 16px;
+            background: #0a0a0a;
+            border-top: 2px solid rgb(0, 221, 255);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-size: 12px;
+            color: rgb(0, 221, 255);
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #333;
+            transition: .4s;
+            border-radius: 20px;
+            border: 1px solid rgb(0, 221, 255);
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 2px;
+            bottom: 2px;
+            background-color: rgb(0, 221, 255);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        .chat-input {
+            flex: 1 1 auto;
+            min-width: 0;
+            padding: 12px 15px;
+            background: #0a0a0a;
+            border: 1px solid rgb(0, 221, 255);
+            color: rgb(0, 221, 255);
+            font-size: 14px;
+            outline: none;
+            font-family: 'Courier New', monospace;
+            border-radius: 6px;
+        }
+
+        .send-button {
+            flex: 0 0 auto;
+            padding: 10px 14px;
+            background: #0a0a0a; /* match container */
+            color: rgb(0, 221, 255);
+            border: 1px solid rgb(0, 221, 255);
+            border-radius: 6px;
+            /* font-weight: 700; */
+            cursor: pointer;
+            box-shadow: 0 0 0 rgba(0,0,0,0); /* keep flat look */
+            transition: background 120ms ease, color 120ms ease, transform 80ms ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        .send-button:hover,
+        .send-button:focus {
+            background: rgba(0,221,255,0.06);
+            outline: none;
+            box-shadow: 0 0 10px rgba(0,221,255,0.06);
+        }
+
+        .send-button:active,
+        .search-button:active {
+            transform: translateY(1px);
+            opacity: 0.95;
+        }
+
+        .search-button {
+            flex: 0 0 auto;
+            padding: 10px 14px;
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            border: 1px solid rgb(0, 221, 255);
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 0 0 rgba(0,0,0,0);
+            transition: background 120ms ease, color 120ms ease, transform 80ms ease;
+            font-family: 'Courier New', monospace;
+            margin-right: 6px;
+        }
+
+        .search-button:hover,
+        .search-button:focus {
+            background: rgba(0,221,255,0.06);
+            outline: none;
+            box-shadow: 0 0 10px rgba(0,221,255,0.06);
+        }
+
+        @media (max-width: 480px) {
+            .chat-input-container { padding: 10px; }
+            .send-button, .search-button { padding: 12px 16px; font-size: 15px; }
+        }
+
+        .chat-input::placeholder {
+            /* match the UI cyan color used elsewhere */
+            color: rgb(0, 221, 255);
+            opacity: 0.85;
+        }
+
+        .typing-indicator {
+            display: none;
+            gap: 10px;
+            padding: 10px 15px;
+            background: #0a0a0a;
+            border: 1px solid rgb(0, 221, 255);
+            max-width: fit-content;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: rgb(0, 221, 255);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 1;
+            }
+            30% {
+                opacity: 0.3;
+            }
+        }
+
+        .error-message {
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            padding: 10px;
+            border: 1px solid rgb(0, 221, 255);
+            margin: 10px 0;
+        }
+
+        .status-message {
+            display: flex;
+            gap: 10px;
+            padding: 10px 15px;
+            background: #0a0a0a;
+            border: 1px solid rgb(255, 165, 0);
+            color: rgb(255, 165, 0);
+            margin: 10px 0;
+            font-size: 13px;
+            align-items: center;
+        }
+
+        .status-message.searching {
+            border-color: rgb(255, 165, 0);
+            color: rgb(255, 165, 0);
+        }
+
+        .status-message.weather {
+            border-color: rgb(100, 200, 255);
+            color: rgb(100, 200, 255);
+        }
+
+        .status-message.success {
+            border-color: rgb(0, 255, 100);
+            color: rgb(0, 255, 100);
+        }
+
+        .status-message.ai-only {
+            border-color: rgb(0, 221, 255);
+            color: rgb(0, 221, 255);
+        }
+
+        .status-message.failed {
+            border-color: rgb(255, 100, 100);
+            color: rgb(255, 100, 100);
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgb(0, 221, 255);
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+                <div class="chat-header">
+            OSIRIS CHAT
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message assistant">
+                <div class="message-avatar">AI</div>
+                <div class="message-content">
+                Initialised... 
+                </div>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                class="chat-input" 
+                id="messageInput" 
+                placeholder="Enter message..."
+                autocomplete="off"
+            >
+            <button id="sendButton" class="send-button" aria-label="Send message">SEND</button>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        
+    let conversationHistory = [];
+    // Default model for the UI — change to any model listed by `ollama list` (e.g. llama3.1:latest)
+    const MODEL_NAME = 'llama3.1:latest';
+    
+    // You can override the search server by adding a query param `?search=http://<host>:8001`
+    const searchParam = new URLSearchParams(window.location.search).get('search');
+    const SEARCH_SERVER = searchParam || `http://${window.location.hostname}:8001`;
+    
+    // You can override the Ollama host by adding a query param `?ollama=http://<host>:11434`
+    // If not provided, the UI will attempt to contact the same host that served the page
+    // (useful when the page is served from the Ollama host). Examples:
+    //  - http://server:8000/OSIRIS-chat.html?ollama=http://192.168.1.50:11434
+    //  - http://server:8000/OSIRIS-chat.html?ollama=192.168.1.50
+
+    function addStatusMessage(message, type = 'searching', persistent = false) {
+        const statusDiv = document.createElement('div');
+        statusDiv.className = `status-message ${type}`;
+        statusDiv.textContent = message;
+        statusDiv.dataset.persistent = persistent;
+        chatMessages.appendChild(statusDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return statusDiv;
+    }
+
+    function updateStatusMessage(statusDiv, message, type) {
+        if (statusDiv && statusDiv.parentNode) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type}`;
+            statusDiv.dataset.persistent = true;
+        }
+    }
+
+    function removeStatusMessage(statusDiv) {
+        if (statusDiv && statusDiv.parentNode && statusDiv.dataset.persistent !== 'true') {
+            statusDiv.remove();
+        }
+    }
+
+    async function detectAndFetchContext(message) {
+        const messageLower = message.toLowerCase();
+        
+        // Check for weather queries first (more specific)
+        const weatherMatch = message.match(/weather\s+(?:in|for|at)?\s*([a-zA-Z\s]+)/i);
+        if (weatherMatch) {
+            const location = weatherMatch[1].trim();
+            const statusDiv = addStatusMessage(`🌤️ Fetching weather for ${location}...`, 'weather');
+            try {
+                const response = await fetch(`${SEARCH_SERVER}/context`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: message })
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    updateStatusMessage(statusDiv, `✓ Weather data retrieved for ${location}`, 'success');
+                    return { context: data.context, source: 'weather' };
+                } else {
+                    updateStatusMessage(statusDiv, `✗ Weather fetch failed (${response.status})`, 'failed');
+                }
+            } catch (error) {
+                console.error('Weather API error:', error);
+                updateStatusMessage(statusDiv, `✗ Weather API error: ${error.message}`, 'failed');
+            }
+            return null;
+        }
+
+        // Skip search for queries that the AI should know
+        const skipSearch = [
+            /what.*date.*today/i,
+            /what.*time.*it/i,
+            /current.*date/i,
+            /today.*date/i,
+            /tell me (a )?joke/i,
+            /write (me )?a/i,
+            /explain (how|what|why)/i,
+            /help me (with|understand)/i,
+            /can you (help|tell|explain|write)/i,
+            /create (a|an)/i,
+            /generate/i
+        ];
+        
+        if (skipSearch.some(pattern => pattern.test(message))) {
+            addStatusMessage('Using AI knowledge (no web search)', 'ai-only', true);
+            return null; // Use AI knowledge
+        }
+
+        // Check for search queries that benefit from external info
+        const needsSearch = [
+            /who (is|was|are|were)/i,
+            /what (is|was|are|were) (the|a)/i,
+            /when (did|was|is)/i,
+            /where (is|was|are)/i,
+            /how (did|does|do)/i,
+            /tell me about/i,
+            /information (on|about)/i,
+            /search for/i,
+            /look up/i,
+            /find (information|out)/i
+        ];
+        
+        if (needsSearch.some(pattern => pattern.test(message))) {
+            const statusDiv = addStatusMessage('🔍 Searching the web...', 'searching');
+            try {
+                const response = await fetch(`${SEARCH_SERVER}/context`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: message })
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Search results:', data.context);
+                    // Only return if we got useful results
+                    if (data.context && !data.context.includes('No relevant information found')) {
+                        updateStatusMessage(statusDiv, '✓ Web search completed - using results', 'success');
+                        return { context: data.context, source: 'web' };
+                    } else {
+                        updateStatusMessage(statusDiv, '✗ No useful results found - using AI knowledge', 'failed');
+                    }
+                } else {
+                    updateStatusMessage(statusDiv, `✗ Search failed (${response.status}) - using AI knowledge`, 'failed');
+                }
+            } catch (error) {
+                console.error('Search API error:', error);
+                updateStatusMessage(statusDiv, `✗ Search error: ${error.message} - using AI knowledge`, 'failed');
+            }
+        } else {
+            addStatusMessage('💭 Using AI knowledge (no search needed)', 'ai-only', true);
+        }
+
+        return null;
+    }
+        
+
+        // Initialize - update welcome message with model name
+        async function initializeChat() {
+            const welcomeMessage = document.querySelector('.message-content');
+            welcomeMessage.textContent = `Osiris initialised... Model: ${MODEL_NAME}`;
+        }
+
+        initializeChat();
+
+        function addMessage(role, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = role === 'user' ? 'USR' : 'AI';
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = content;
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function setTyping(isTyping) {
+            let typingIndicator = document.querySelector('.typing-indicator');
+            
+            if (isTyping && !typingIndicator) {
+                typingIndicator = document.createElement('div');
+                typingIndicator.className = 'typing-indicator active';
+                typingIndicator.innerHTML = `
+                    <div class="message-avatar">AI</div>
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                `;
+                chatMessages.appendChild(typingIndicator);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } else if (!isTyping && typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            messageInput.disabled = true;
+            addMessage('user', message);
+            messageInput.value = '';
+
+            // Check if we need to fetch external context (weather/search)
+            const contextResult = await detectAndFetchContext(message);
+            
+            if (contextResult && contextResult.context) {
+                console.log('Using external context for query');
+                console.log('Context source:', contextResult.source);
+                console.log('Context received:', contextResult.context.substring(0, 200) + '...');
+                
+                // Add context as system message with source indicator
+                const sourceLabel = contextResult.source === 'weather' ? 'WEATHER DATA' : 'WEB SEARCH RESULTS';
+                conversationHistory.push({
+                    role: 'system',
+                    content: `${sourceLabel} (current/external source):\n${contextResult.context}\n\nIMPORTANT: Base your answer primarily on the ${sourceLabel} above. This is current information retrieved from external sources. Combine it with your knowledge if needed, but prioritize the search results for factual accuracy.`
+                });
+                conversationHistory.push({ role: 'user', content: message });
+            } else {
+                console.log('Using AI knowledge only');
+                conversationHistory.push({ role: 'user', content: message });
+            }
+
+            setTyping(true);
+
+            try {
+                // Resolve API base (allow override via ?ollama=...)
+                const queryParam = new URLSearchParams(window.location.search).get('ollama');
+                let API_URL = '';
+                if (queryParam) {
+                    API_URL = queryParam.replace(/\/$/, '');
+                    if (!/^https?:\/\//i.test(API_URL)) API_URL = 'http://' + API_URL;
+                } else {
+                    // default to the host that served the page, on port 11434
+                    API_URL = `${window.location.protocol}//${window.location.hostname}:11434`;
+                }
+
+                const response = await fetch(`${API_URL}/api/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: MODEL_NAME,
+                        messages: conversationHistory,
+                        stream: true
+                    })
+                });
+
+                setTyping(false);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let assistantMessage = '';
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message assistant';
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                avatar.textContent = 'AI';
+                
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+                
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+                chatMessages.appendChild(messageDiv);
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.trim()) {
+                            try {
+                                const json = JSON.parse(line);
+                                if (json.message && json.message.content) {
+                                    assistantMessage += json.message.content;
+                                    messageContent.textContent = assistantMessage;
+                                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                                }
+                            } catch (e) {
+                                console.error('Error parsing JSON:', e);
+                            }
+                        }
+                    }
+                }
+
+                conversationHistory.push({ role: 'assistant', content: assistantMessage });
+
+            } catch (error) {
+                setTyping(false);
+                console.error('Error:', error);
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = `ERROR: ${error.message}. Check OSIRIS connection.`;
+                chatMessages.appendChild(errorDiv);
+            } finally {
+                messageInput.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        // send on Enter
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // send button for mobile / accessibility
+        const sendButton = document.getElementById('sendButton');
+        if (sendButton) {
+            sendButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                sendMessage();
+            });
+        }
+
+        messageInput.focus();
+    </script>
+</body>
+</html>
