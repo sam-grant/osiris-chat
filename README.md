@@ -45,6 +45,9 @@ Creates virtual environment and installs dependencies (aiohttp, beautifulsoup4, 
 ### 3. Start services
 
 **Development (manual):**
+
+*Note: Each command below needs to run continuously. Use separate terminals or run with `&` to background.*
+
 ```bash
 # Terminal 1: Search proxy
 venv/bin/python3 search-proxy.py
@@ -56,9 +59,21 @@ python3 -m http.server 8000 --bind 0.0.0.0
 ollama serve
 ```
 
+*Alternative: Run in background with logs:*
+```bash
+venv/bin/python3 search-proxy.py &
+python3 -m http.server 8000 --bind 0.0.0.0 &
+ollama serve &
+```
+
 **Production (systemd, Linux only):**
 ```bash
 ./install-systemd.sh
+```
+
+**Quick start (all-in-one, development):**
+```bash
+./start-all.sh  # Sets up environment and starts all services
 ```
 
 ### 4. Open chat
@@ -114,8 +129,12 @@ Add URL parameters:
 
 ## Management
 
-**Stop all services:**
+**Quick commands:**
 ```bash
+# Start everything (development mode)
+./start-all.sh
+
+# Stop all services
 ./stop-all.sh
 ```
 
@@ -150,6 +169,7 @@ osiris-chat/
 ├── search-proxy.py           # Search/weather API proxy
 ├── pyproject.toml            # Python dependencies
 ├── setup-venv.sh            # Environment setup
+├── start-all.sh             # Start all services (development)
 ├── install-systemd.sh       # Install services
 └── stop-all.sh              # Stop all services
 
