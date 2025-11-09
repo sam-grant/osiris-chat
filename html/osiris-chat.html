@@ -479,7 +479,7 @@
         
     let conversationHistory = [];
     // Default model for the UI — change to any model listed by `ollama list` (e.g. llama3.1:latest)
-    const MODEL_NAME = 'gpt-oss:20b'; // llama3.1:latest';
+    const MODEL_NAME = 'llama3.1:latest'; // 'deepseek-r1:8b'; // 'gpt-oss:20b'; // 
     
     // Configure marked.js for security and better rendering
     if (typeof marked !== 'undefined') {
@@ -614,7 +614,7 @@
                 updateStatusMessage(statusDiv, `✗ Search error: ${error.message} - using AI knowledge`, 'failed');
             }
         } else {
-            addStatusMessage('💭 Using AI knowledge (no search needed)', 'ai-only', true);
+            addStatusMessage('Using AI knowledge (no search needed)', 'ai-only', true);
         }
 
         return null;
