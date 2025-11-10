@@ -13,6 +13,13 @@ if [ ! -d "venv" ]; then
     echo ""
 fi
 
+# Check if search proxy is already running
+if lsof -i :8001 > /dev/null 2>&1; then
+    echo "Search proxy already running on port 8001. Stopping old instance..."
+    pkill -f "python.*search-proxy.py"
+    sleep 1
+fi
+
 # Start search proxy in background
 echo "Starting search proxy on port 8001..."
 venv/bin/python3 search-proxy.py > /tmp/osiris-search.log 2>&1 &
@@ -25,6 +32,13 @@ if ps -p $SEARCH_PID > /dev/null; then
 else
     echo "  ✗ Search proxy failed to start. Check /tmp/osiris-search.log"
     exit 1
+fi
+
+# Check if HTTP server is already running
+if lsof -i :8000 > /dev/null 2>&1; then
+    echo "HTTP server already running on port 8000. Stopping old instance..."
+    pkill -f "python.*http.server 8000"
+    sleep 1
 fi
 
 # Start HTTP server in background
