@@ -1,8 +1,10 @@
-# Local AI interface with web search
+# A simple web interface for local AI models
 
-A simple template for a web-based chat interface for local open source Ollama models.
+A simple web-based chat interface for local Ollama models.
 
 This is a fun way to interact with LLMs privately on your local network!
+
+It's relatively straightforward to go from here: you could customise the appearance, add a Python backend for API calls, or incorporate RAG for document searches!
 
 ## Demo
 
