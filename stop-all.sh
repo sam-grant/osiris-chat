@@ -16,6 +16,14 @@ else
     echo "  ⭐ Skipping Ollama service stop."
 fi
 
+# Kill any running Python HTTP servers on port 8000
+echo "⭐ Stopping HTTP server on port 8000..."
+if pkill -f "python3 -m http.server 8000" 2>/dev/null; then 
+    echo "  ✅ HTTP server stopped."
+else
+    echo "  ⭐ HTTP server was not running."
+fi
+
 echo ""
 echo "=================================="
 echo "✅ All services stopped"
