@@ -1,6 +1,5 @@
 #!/bin/bash
 
-echo ""
 echo "=================================="
 echo "⭐ Starting all services..."
 echo "=================================="
@@ -35,4 +34,3 @@ echo ""
 echo "Logs:"
 echo "  - Ollama: logs/ollama.log"
 echo "=================================="
-echo ""
