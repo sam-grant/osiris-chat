@@ -7,6 +7,7 @@ from aiohttp import web
 
 # Import internal modules
 from search import fetch_duckduckgo_instant, fetch_duckduckgo_html
+from wikipedia import fetch_wikipedia
 
 # Set up logging 
 logging.basicConfig(
@@ -33,9 +34,19 @@ async def logging_middleware(request, handler):
 
 # Function to fetch search results from API backends
 async def fetch_search_results(query):
-    """Route queries to web search backend"""
+    """Route queries to appropriate search backend"""
     # Set to lower case for easier matching
     query_lower = query.lower()
+    
+    # Check for explicit Wikipedia request
+    wiki_keywords = ['wikipedia', 'wiki']
+    if any(keyword in query_lower for keyword in wiki_keywords):
+        # Remove the wiki keyword from query
+        clean_query = query
+        for keyword in wiki_keywords:
+            clean_query = re.sub(rf'\b{keyword}\b', '', clean_query, flags=re.IGNORECASE).strip()
+        if clean_query:
+            return await fetch_wikipedia(clean_query)
     
     # Try DuckDuckGo HTML search first
     ddg_html_results = await fetch_duckduckgo_html(query)
@@ -47,8 +58,13 @@ async def fetch_search_results(query):
     if ddg_instant_results:
         return ddg_instant_results
     
+    # Fall back to Wikipedia
+    wiki_results = await fetch_wikipedia(query)
+    if wiki_results and wiki_results[0] != "No relevant information found":
+        return wiki_results
+    
     # If no results found, return default message
-    return ["No relevant information found! Try rephrasing your question."]
+    return ["No relevant information found. Try rephrasing your question."]
 
 # Handler for /context endpoint 
 # (information passed back to AI model)
