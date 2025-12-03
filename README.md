@@ -4,12 +4,16 @@ A simple web-based chat interface for local Ollama models.
 
 This is a fun way to interact with LLMs privately on your local network!
 
-It's relatively straightforward to go from here: you could customise the appearance, add a Python backend for API calls, or incorporate RAG for document searches!
-
 ## Demo
 
-## Basic AI interaction
-![Chat Demo 1](docs/chat_demo_1.png)
+### Basic AI interaction
+![Chat Demo 1](docs/chat_demo_basic.png)
+
+## Architecture
+
+![Architecture](docs/architecture_with_backend.png)
+
+**Note:** Python backend is not implemented in `v1.0.0-simple`.
 
 ## Quick start
 
