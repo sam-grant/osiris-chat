@@ -32,6 +32,37 @@ function setThinking(isThinking) {
     indicator.textContent = 'AI is thinking...';
 }
 
+// Fetch search context from backend
+async function fetchSearchContext(query) {
+    try {
+        // Set search proxy URL
+        const SEARCH_PROXY_URL = `${window.location.protocol}//${window.location.hostname}:8001`;
+        
+        // Send POST request to /context endpoint
+        const response = await fetch(`${SEARCH_PROXY_URL}/context`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ prompt: query })
+        });
+
+        // Check for HTTP errors
+        if (!response.ok) {
+            console.error('Search proxy error:', response.status);
+            return null;
+        }
+
+        // Parse and return context
+        const data = await response.json();
+        return data.context;
+    } catch (error) {
+        // Log error and return null
+        console.error('Failed to fetch search context:', error);
+        return null;
+    }
+}
+
 // Send message to Ollama
 async function sendMessage() {
     const userMessage = messageInput.value.trim();
@@ -41,12 +72,51 @@ async function sendMessage() {
     addMessage('user', userMessage);
     messageInput.value = '';
 
-    // Add to conversation history
-    console.log('Replying with AI knowledge only');
-    conversationHistory.push({ role: 'user', content: userMessage });
-
     // Start thinking indicator
-    setThinking(true);   
+    setThinking(true);
+
+    // Check if search is needed based on keywords
+    const searchKeywords = [
+        // Explicit search requests
+        'search', 'web', 'google', 'look up', 'find', 'search for',
+        
+        // Time-sensitive
+        'weather', 'current', 'today', 'latest', 'news', 'now', 'recent',
+        'yesterday', 'tomorrow', 'this week', 'currently',
+        
+        // Question words
+        'who is', 'what is', 'when is', 'where is', 'how is',
+        "who's", "what's", "where's", "how's",
+        'who are', 'what are', 'where are',
+        
+        // Real-time data
+        'price', 'stock', 'score', 'exchange rate', 'currency',
+        
+        // Events
+        'when does', 'when did', 'won', 'winner', 'election', 'appointed'
+    ];
+
+    const needsSearch = searchKeywords.some(keyword => userMessage.toLowerCase().includes(keyword));
+    console.log('User message:', userMessage);
+    console.log('Needs search?', needsSearch);
+
+    // Fetch search context if needed
+    let enhancedMessage = userMessage;
+    if (needsSearch) {
+        const searchContext = await fetchSearchContext(userMessage);
+        if (searchContext) {
+            // Prepend search results to user question
+            enhancedMessage = `${searchContext}\n\nUser question: ${userMessage}`;
+            console.log('Replying with search context');
+        } else {
+            console.log('Search failed, replying with AI knowledge only');
+        }
+    } else {
+        console.log('Replying with AI knowledge only');
+    }
+
+    // Add enhanced message to conversation history
+    conversationHistory.push({ role: 'user', content: enhancedMessage });   
 
     try {
         // Set API URL
@@ -109,7 +179,9 @@ async function sendMessage() {
                             // Append content to assistant message
                             assistantMessage += json.message.content;
                             // Update the message display
-                            chatMessage.textContent = assistantMessage;
+                            // chatMessage.textContent = assistantMessage;
+                            // With markdown support
+                            chatMessage.innerHTML = marked.parse(assistantMessage);
                             // Scroll to bottom
                             chatMessages.scrollTop = chatMessages.scrollHeight;
                         }

@@ -1,0 +1,5 @@
+# Web framework for the search proxy server
+aiohttp>=3.9.0
+
+# HTML parsing for DuckDuckGo HTML search results
+beautifulsoup4>=4.12.0
