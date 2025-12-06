@@ -219,6 +219,43 @@
             text-align: center;
         }
 
+        .status-message {
+            display: flex;
+            gap: 10px;
+            padding: 10px 15px;
+            background: #0a0a0a;
+            border: 1px solid rgb(255, 165, 0);
+            color: rgb(255, 165, 0);
+            margin: 10px 0;
+            font-size: 13px;
+            align-items: center;
+        }
+
+        .status-message.searching {
+            border-color: rgb(255, 165, 0);
+            color: rgb(255, 165, 0);
+        }
+
+        .status-message.weather {
+            border-color: rgb(100, 200, 255);
+            color: rgb(100, 200, 255);
+        }
+
+        .status-message.success {
+            border-color: rgb(0, 255, 100);
+            color: rgb(0, 255, 100);
+        }
+
+        .status-message.ai-only {
+            border-color: rgb(0, 221, 255);
+            color: rgb(0, 221, 255);
+        }
+
+        .status-message.failed {
+            border-color: rgb(255, 100, 100);
+            color: rgb(255, 100, 100);
+        }
+
         .input-container {
             padding: 12px 16px;
             background: #0a0a0a;

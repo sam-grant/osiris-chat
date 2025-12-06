@@ -48,6 +48,31 @@ function setThinking(isThinking) {
     indicator.textContent = 'AI is thinking...';
 }
 
+// Status message functions
+function addStatusMessage(message, type = 'searching', persistent = false) {
+    const statusDiv = document.createElement('div');
+    statusDiv.className = `status-message ${type}`;
+    statusDiv.textContent = message;
+    statusDiv.dataset.persistent = persistent;
+    chatMessages.appendChild(statusDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return statusDiv;
+}
+
+function updateStatusMessage(statusDiv, message, type) {
+    if (statusDiv && statusDiv.parentNode) {
+        statusDiv.textContent = message;
+        statusDiv.className = `status-message ${type}`;
+        statusDiv.dataset.persistent = true;
+    }
+}
+
+function removeStatusMessage(statusDiv) {
+    if (statusDiv && statusDiv.parentNode && statusDiv.dataset.persistent !== 'true') {
+        statusDiv.remove();
+    }
+}
+
 // Fetch search context from backend
 async function fetchSearchContext(query) {
     try {
@@ -119,17 +144,45 @@ async function sendMessage() {
 
     // Fetch search context if needed
     let enhancedMessage = userMessage;
+    let statusDiv = null;
+
     if (needsSearch) {
+        // Detect specific query types
+        const weatherMatch = userMessage.match(/weather\s+(?:in|for|at)?\s*([a-zA-Z\s]+)/i);
+        const wikiMatch = userMessage.match(/\b(wikipedia|wiki)\b/i);
+
+        // Show appropriate status indicator
+        if (weatherMatch) {
+            const location = weatherMatch[1].trim();
+            statusDiv = addStatusMessage(`[WEATHER] Fetching weather for ${location}...`, 'weather');
+        } else if (wikiMatch) {
+            statusDiv = addStatusMessage('[WIKIPEDIA] Searching Wikipedia...', 'searching');
+        } else {
+            statusDiv = addStatusMessage('[WEB] Searching the web...', 'searching');
+        }
+
         const searchContext = await fetchSearchContext(userMessage);
         if (searchContext) {
             // Prepend search results to user question
             enhancedMessage = `${searchContext}\n\nUser question: ${userMessage}`;
             console.log('Replying with search context');
+
+            // Update status to success
+            if (weatherMatch) {
+                updateStatusMessage(statusDiv, `Weather data retrieved for ${weatherMatch[1].trim()}`, 'success');
+            } else if (wikiMatch) {
+                updateStatusMessage(statusDiv, 'Wikipedia results retrieved', 'success');
+            } else {
+                updateStatusMessage(statusDiv, 'Web search completed', 'success');
+            }
         } else {
             console.log('Search failed, replying with AI knowledge only');
+            // Update status to failed
+            updateStatusMessage(statusDiv, '[FAILED] Search failed - using AI knowledge only', 'failed');
         }
     } else {
         console.log('Replying with AI knowledge only');
+        addStatusMessage('Using AI knowledge', 'ai-only', true);
     }
 
     // Add enhanced message to conversation history
