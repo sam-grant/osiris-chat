@@ -178,11 +178,10 @@ async function sendMessage() {
         } else {
             console.log('Search failed, replying with AI knowledge only');
             // Update status to failed
-            updateStatusMessage(statusDiv, '[FAILED] Search failed - using AI knowledge only', 'failed');
+            updateStatusMessage(statusDiv, 'Search failed - using AI knowledge only', 'failed');
         }
     } else {
         console.log('Replying with AI knowledge only');
-        addStatusMessage('Using AI knowledge', 'ai-only', true);
     }
 
     // Add enhanced message to conversation history
