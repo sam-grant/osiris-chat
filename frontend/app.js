@@ -12,10 +12,26 @@ let conversationHistory = [];
 
 // Add a message to the display
 function addMessage(role, content) {
-    const chatMessage = document.createElement('div');
-    chatMessage.className = `message ${role}`;
-    chatMessage.textContent = content;
-    chatMessages.appendChild(chatMessage);
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${role}`;
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.textContent = role === 'user' ? 'USR' : 'AI';
+    
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+    
+    // Render markdown for AI responses, plain text for user messages
+    if (role === 'assistant' && typeof marked !== 'undefined') {
+        messageContent.innerHTML = marked.parse(content);
+    } else {
+        messageContent.textContent = content;
+    }
+    
+    messageDiv.appendChild(avatar);
+    messageDiv.appendChild(messageContent);
+    chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
@@ -76,6 +92,7 @@ async function sendMessage() {
     setThinking(true);
 
     // Check if search is needed based on keywords
+    // Would be better to use NLP to determine this! 
     const searchKeywords = [
         // Explicit search requests
         'search', 'web', 'google', 'look up', 'find', 'search for',
@@ -153,10 +170,21 @@ async function sendMessage() {
         let assistantMessage = '';
 
         // Init display for assistant message
-        const chatMessage = document.createElement('div');
-        chatMessage.className = 'message assistant';
-        chatMessages.appendChild(chatMessage);
-
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message assistant';
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = 'AI';
+        
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        
+        // Append DOM elements
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(messageContent);
+        chatMessages.appendChild(messageDiv);
+        
         // Read the stream
         while (true) {
             // Read a chunk from the stream
@@ -178,8 +206,8 @@ async function sendMessage() {
                         if (json.message && json.message.content) {
                             // Append content to assistant message
                             assistantMessage += json.message.content;
-                            // Update the message displa (with markdown support)
-                            chatMessage.innerHTML = marked.parse(assistantMessage);
+                            // Update the message display (with markdown support)
+                            messageContent.innerHTML = marked.parse(assistantMessage);
                             // Scroll to bottom
                             chatMessages.scrollTop = chatMessages.scrollHeight;
                         }
@@ -189,7 +217,7 @@ async function sendMessage() {
                 }
             }
         }
-        // Final rendering of assistant message
+        // Final rendering of AI message
         conversationHistory.push({ role: 'assistant', content: assistantMessage });
 
     } catch (error) {
