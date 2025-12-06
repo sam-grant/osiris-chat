@@ -178,10 +178,8 @@ async function sendMessage() {
                         if (json.message && json.message.content) {
                             // Append content to assistant message
                             assistantMessage += json.message.content;
-                            // Update the message display
-                            chatMessage.textContent = assistantMessage;
-                            // With markdown support
-                            // chatMessage.innerHTML = marked.parse(assistantMessage);
+                            // Update the message displa (with markdown support)
+                            chatMessage.innerHTML = marked.parse(assistantMessage);
                             // Scroll to bottom
                             chatMessages.scrollTop = chatMessages.scrollHeight;
                         }
