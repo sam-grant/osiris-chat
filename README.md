@@ -1,19 +1,21 @@
-# A simple web interface for local AI models
+# A web interface for local AI models
 
-A simple web-based chat interface for local Ollama models.
-
-This is a fun way to interact with LLMs privately on your local network!
+A stylish web-based chat interface for Ollama for your local network with integrated web, weather, and wikipedia search.
 
 ## Demo
 
-### Basic AI interaction
-![Chat Demo 1](docs/chat_demo_basic.png)
+### Chat
+![Chat Demo 1](docs/ollama_chat_demo.png)
+
+### Web search
+![Chat Demo 2](docs/search_demo.png)
 
 ## Architecture
 
+The browser loads static HTML/CSS/JS files from a Python HTTP server which talks with the Ollama API. Ollama forwards messages to a locally-running LLM, which generates tokens which stream back through the chain to appear in the browser. A seperate Python backend server enables API calls for features like web search.
+
 ![Architecture](docs/architecture_with_backend.png)
 
-**Note:** Python backend is not implemented in `v1.0.0-simple`.
 
 ## Quick start
 
@@ -25,14 +27,14 @@ First, you need to install Ollama and download at least one language model:
 # Install Ollama (Linux/macOS)
 curl -fsSL https://ollama.ai/install.sh | sh
 
-# Download a model (e.g., Llama 3.1)
+# Download a model (browse https://ollama.ai/search)
 ollama pull llama3.1:latest
 
 # Verify installation
 ollama list
 ```
 
-**Note:** Ollama must be running for the chat interface to work. The application defaults to using `llama3.1:latest` but you can change this in the configuration. Larger models require more compute! 
+**Note:** Ollama must be running for the chat interface to work. The application defaults to using `llama3.1:latest` but you can change this in the configuration.
 
 ### 2. Start services
 
@@ -54,11 +56,34 @@ OLLAMA_HOST=0.0.0.0:11434 ollama serve > logs/ollama.log 2>&1 &
 
 # Web server
 cd frontend && python3 -m http.server 8000 --bind 0.0.0.0 > ../logs/http-server.log 2>&1 &
+
+# ---------------------------------------
+# Optional Python backend for web search:
+# ---------------------------------------
+
+# Create Python & activate a virtual environment 
+python3 -m venv venv
+source venv/bin/activate
+
+# Upgrade pip & install dependencies 
+pip install --upgrade pip
+pip install -r backend/requirements.txt
+
+# Start the search proxy
+python3 backend/search-proxy.py > logs/search-proxy.log 2>&1 &
 ```
 
 ### 3. Open chat
 
-Navigate to: `http://localhost:8000/osiris-chat.html`
+Navigate to:
+
+`http://localhost:8000/chat.html`
+
+or
+
+`http://<LOCAL_IP>:8000/chat.html`
+
+if accessing from another device on your network where `LOCAL_IP` is the IP address of the device running `ollama-chat`. 
 
 ### 4. Stop services
 
@@ -67,11 +92,14 @@ Navigate to: `http://localhost:8000/osiris-chat.html`
 ./stop-all.sh  # Will prompt you to stop Ollama
 ```
 
-**Manual stop (more fun):**
+**Manual stop:**
 
 ```bash
 # Stop HTTP server
 pkill -f "python.*http.server 8000"
+
+# Stop search proxy
+pkill -f "search-proxy.py"
 
 # Stop Ollama
 pkill ollama
