@@ -22,21 +22,21 @@ echo ""
 
 # Check files
 echo "Files:"
-for file in frontend/osiris-chat.html frontend/app.js backend/search-proxy.py backend/search.py backend/requirements.txt; do
+for file in frontend/ollama-chat.html frontend/app.js backend/search-proxy.py backend/search.py backend/requirements.txt; do
     [ -f "$file" ] && echo "  ✅ $file" && files_ok=true || echo "  ❌ $file (missing)"
 done
 echo ""
 
 # Check venv
 echo "Environment:"
-[ -d "venv2" ] && echo "  ✅ venv2/" || echo "  ❌ venv2/ (run ./setup-venv.sh)"
+[ -d "venv" ] && echo "  ✅ venv/" || echo "  ❌ venv/ (run ./setup-venv.sh)"
 echo ""
 
 echo "=========================================="
 if $files_ok && $ollama_ok && $http_ok && $search_proxy_ok; then
     echo "✅ All services running"
     echo ""
-    echo "Access: http://localhost:8000/osiris-chat.html"
+    echo "Access: http://localhost:8000/ollama-chat.html"
 else
     echo "❌ Issues detected:"
     $ollama_ok || echo "  - Ollama not running"
