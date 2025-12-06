@@ -27,7 +27,7 @@ fi
 
 # Start HTTP server in background
 echo "⭐ Starting HTTP server on port 8000..."
-../venv/bin/python3 -m http.server 8000 --bind 0.0.0.0 > http-server.log 2>&1 &
+python3 -m http.server 8000 > http-server.log 2>&1 &
 HTTP_PID=$!
 sleep 1
 
