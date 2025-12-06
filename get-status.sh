@@ -22,7 +22,7 @@ echo ""
 
 # Check files
 echo "Files:"
-for file in frontend/ollama-chat.html frontend/app.js backend/search-proxy.py backend/search.py backend/requirements.txt; do
+for file in frontend/chat.html frontend/app.js backend/search-proxy.py backend/search.py backend/wikipedia.py backend/weather.py backend/requirements.txt; do
     [ -f "$file" ] && echo "  ✅ $file" && files_ok=true || echo "  ❌ $file (missing)"
 done
 echo ""
