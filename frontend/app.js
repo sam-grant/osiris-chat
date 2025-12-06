@@ -122,11 +122,11 @@ async function sendMessage() {
         // Explicit search requests
         'search', 'web', 'google', 'look up', 'find', 'search for',
         
-        // Time-sensitive
+        // Current
         'weather', 'current', 'today', 'latest', 'news', 'now', 'recent',
         'yesterday', 'tomorrow', 'this week', 'currently',
         
-        // Question words
+        // Questions
         'who is', 'what is', 'when is', 'where is', 'how is',
         "who's", "what's", "where's", "how's",
         'who are', 'what are', 'where are',
@@ -154,11 +154,11 @@ async function sendMessage() {
         // Show appropriate status indicator
         if (weatherMatch) {
             const location = weatherMatch[1].trim();
-            statusDiv = addStatusMessage(`[WEATHER] Fetching weather for ${location}...`, 'weather');
+            statusDiv = addStatusMessage(`Fetching weather for ${location}...`, 'weather');
         } else if (wikiMatch) {
-            statusDiv = addStatusMessage('[WIKIPEDIA] Searching Wikipedia...', 'searching');
+            statusDiv = addStatusMessage('Searching Wikipedia...', 'searching');
         } else {
-            statusDiv = addStatusMessage('[WEB] Searching the web...', 'searching');
+            statusDiv = addStatusMessage('Searching the web...', 'searching');
         }
 
         const searchContext = await fetchSearchContext(userMessage);

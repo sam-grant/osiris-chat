@@ -8,6 +8,7 @@ from aiohttp import web
 # Import internal modules
 from search import fetch_duckduckgo_instant, fetch_duckduckgo_html
 from wikipedia import fetch_wikipedia
+from weather import fetch_weather
 
 # Set up logging 
 logging.basicConfig(
@@ -37,7 +38,18 @@ async def fetch_search_results(query):
     """Route queries to appropriate search backend"""
     # Set to lower case for easier matching
     query_lower = query.lower()
-    
+
+    # Check for weather request first
+    if 'weather' in query_lower:
+        # Try to extract location
+        weather_match = re.search(r'weather\s+(?:in|for|at)?\s*([a-zA-Z\s]+?)(?:\?|$|,)', query, re.IGNORECASE)
+        if weather_match:
+            location = weather_match.group(1).strip()
+            if location and len(location) > 1:
+                return await fetch_weather(location)
+        # No location specified
+        return ["Please specify a location. Example: 'weather in London' or 'what's the weather in Paris?'"]
+
     # Check for explicit Wikipedia request
     wiki_keywords = ['wikipedia', 'wiki']
     if any(keyword in query_lower for keyword in wiki_keywords):
