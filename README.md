@@ -1,6 +1,6 @@
 # A web interface for local AI models
 
-A stylish web-based chat interface for Ollama for your local network with integrated web, weather, and wikipedia search.
+A stylish web-based chat interface for Ollama with integrated web search.
 
 ## Demo
 
