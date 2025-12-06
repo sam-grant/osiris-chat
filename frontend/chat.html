@@ -1,56 +1,234 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>CHAT</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OLLAMA CHAT</title>
     <!-- Markdown support -- makes a huge difference -->
     <script src="https://cdn.jsdelivr.net/npm/marked@9.1.2/marked.min.js"></script>
     <style>
-        /* Centred layout with dark theme*/
-        body { 
-            font-family: monospace;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
             background: #0a0a0a;
-            color: rgb(0, 221, 255);
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
             padding: 20px;
         }
-        /* Main container - full height layout */
+
         .container {
             width: 100%;
             max-width: 900px;
             height: 85vh;
-            border: 2px solid rgb(0, 221, 255);
             background: #0a0a0a;
+            border: 2px solid rgb(0, 221, 255);
             display: flex;
             flex-direction: column;
         }
-        /* Scrollable message area */
-        #messages { 
+
+        .chat-header {
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            padding: 15px 20px;
+            border-bottom: 2px solid rgb(0, 221, 255);
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #messages {
             flex: 1;
             overflow-y: auto;
-            border-bottom: 2px solid rgb(0, 221, 255);
             padding: 20px;
-            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
-        /* Message types */
-        .message { margin: 10px 0; }
-        .user { color: #fff; }
-        .assistant { color: rgb(0, 221, 255); }
-        .system { color: rgb(255, 165, 0); font-style: italic; }
-        .error { color: rgb(255, 100, 100); font-style: italic; }
-        /* Input container */
+
+        .message {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border: 1px solid rgb(0, 221, 255);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border: 1px solid rgb(0, 221, 255);
+            line-height: 1.5;
+            background: #0a0a0a;
+            color: rgb(0, 221, 255);
+            font-size: 14px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .message.user .message-avatar {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        /* Markdown styles */
+        .message-content h1,
+        .message-content h2,
+        .message-content h3,
+        .message-content h4,
+        .message-content h5,
+        .message-content h6 {
+            color: rgb(0, 221, 255);
+            margin: 10px 0 5px 0;
+            font-weight: bold;
+        }
+
+        .message-content h1 { font-size: 1.5em; }
+        .message-content h2 { font-size: 1.3em; }
+        .message-content h3 { font-size: 1.1em; }
+
+        .message-content code {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+        }
+
+        .message-content pre {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .message-content pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            color: #00ff88;
+            display: block;
+        }
+
+        .message-content blockquote {
+            border-left: 3px solid rgb(0, 221, 255);
+            padding-left: 15px;
+            margin: 10px 0;
+            color: #aaa;
+            font-style: italic;
+        }
+
+        .message-content ul,
+        .message-content ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .message-content li {
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+
+        .message-content strong {
+            color: rgb(0, 221, 255);
+            font-weight: bold;
+        }
+
+        .message-content em {
+            color: #ffaa00;
+            font-style: italic;
+        }
+
+        .message-content a {
+            color: rgb(0, 221, 255);
+            text-decoration: underline;
+        }
+
+        .message-content a:hover {
+            color: #00ffff;
+        }
+
+        .message-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .message-content th,
+        .message-content td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .message-content th {
+            background: #1a1a1a;
+            color: rgb(0, 221, 255);
+            font-weight: bold;
+        }
+
+        .message-content hr {
+            border: none;
+            border-top: 1px solid #333;
+            margin: 20px 0;
+        }
+
+        .message-content p {
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+
+        .system {
+            color: rgb(255, 165, 0);
+            font-style: italic;
+            text-align: center;
+        }
+
+        .error {
+            color: rgb(255, 100, 100);
+            font-style: italic;
+            text-align: center;
+        }
+
         .input-container {
             padding: 12px 16px;
             background: #0a0a0a;
+            border-top: 2px solid rgb(0, 221, 255);
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-        /* Input field */
-        #input { 
+
+        #input {
             width: 100%;
             padding: 10px;
             background: #0a0a0a;
@@ -59,7 +237,7 @@
             outline: none;
             box-sizing: border-box;
         }
-        /* Send button */
+
         button {
             padding: 10px 20px;
             background: #0a0a0a;
@@ -67,6 +245,7 @@
             color: rgb(0, 221, 255);
             cursor: pointer;
         }
+
         button:hover {
             background: rgba(0, 221, 255, 0.06);
         }
@@ -74,15 +253,13 @@
 </head>
 <body>
     <div class="container">
-        <!-- Message history -->
+        <div class="chat-header">OLLAMA CHAT</div>
         <div id="messages"></div>
-        <!-- User input -->
         <div class="input-container">
             <input id="input" type="text" placeholder="...">
             <button id="send">SEND</button>
         </div>
     </div>
-    <!-- Chat functionality -->
     <script src="app.js"></script>
 </body>
 </html>
