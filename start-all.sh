@@ -11,6 +11,7 @@ if [ ! -d logs ]; then
     mkdir logs
     echo "✅ Created logs directory"
 fi
+echo ""
 
 # Check Ollama
 echo "👀 Checking Ollama..."
@@ -23,7 +24,7 @@ else
         echo "  ⭐ Ollama models directory not found. Creating ~/.ollama/models..."
         mkdir -p ~/.ollama/models
     fi
-    OLLAMA_HOST=0.0.0.0:11434 ollama serve > logs/ollama.log 2>&1 &
+    OLLAMA_HOST=0.0.0.0:11434 OLLAMA_ORIGINS="*" ollama serve > logs/ollama.log 2>&1 &
     sleep 2 
     echo "  ✅ Ollama started"
 fi
@@ -37,8 +38,10 @@ if [ ! -d "venv" ]; then
 else
     echo "  ✅ Virtual environment found"
 fi
-echo "⭐ Activating virtual environment..."
+
+echo ""
 source venv/bin/activate    
+echo "  ✅ Activated virtual environment..."
 
 # Check if search proxy is already running
 echo "👀 Checking search proxy..."
@@ -60,6 +63,7 @@ else
     echo "  ❌ Search proxy failed to start. Check logs/search-proxy.log"
     exit 1
 fi
+echo ""
 
 # Check if HTTP server is already running
 echo "👀 Checking HTTP server..."
